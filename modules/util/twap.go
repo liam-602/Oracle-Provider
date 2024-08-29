@@ -59,6 +59,9 @@ func GetPrices(symbol string, p db.PriceHistory) (map[string]types.TickerPrice, 
 			Time:  now,
 		}
 	}
+	if len(derivativePrices) == 0 {
+		return nil, fmt.Errorf("there are no token prices")
+	}
 	return derivativePrices, nil
 }
 

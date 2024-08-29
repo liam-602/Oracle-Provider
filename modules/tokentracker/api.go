@@ -2,6 +2,7 @@ package tokentracker
 
 import (
 	"encoding/json"
+	"fmt"
 	"net/http"
 
 	"github.com/Interlocked-Labs/oracle-provider/logging"
@@ -9,6 +10,10 @@ import (
 	"github.com/go-chi/render"
 	"github.com/sirupsen/logrus"
 )
+
+type Resource struct {
+	Oracle *Oracle
+}
 
 var (
 	log *logrus.Entry
@@ -27,14 +32,23 @@ func NewResource(o *Oracle) (*Resource, error) {
 func (rs *Resource) Router() *chi.Mux {
 	r := chi.NewRouter()
 	r.Use(render.SetContentType(render.ContentTypeJSON))
-	r.Get("/", rs.GetGasTokenPerChain)
+	r.Get("/", rs.GetTokenPricePerChain)
 	return r
 }
 
-func (rs *Resource) GetGasTokenPerChain(w http.ResponseWriter, r *http.Request) {
+func (rs *Resource) GetTokenPricePerChain(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Cache-Control", "no-store, max-age=0")
 	w.Header().Set("Content-Type", "application/json")
-	response, _ := rs.Oracle.CalcNSubmitTokenPrices()
-	rss, _ := json.Marshal(response)
-	w.Write([]byte(rss))
+	response, err := rs.Oracle.CalcNSubmitTokenPrices()
+	if err != nil {
+		fmt.Println("error while submitting token prices: ", err)
+	}
+	rss, err := json.Marshal(response)
+	if err != nil {
+		fmt.Println("error while marshalling: ", err)
+	}
+	_, err = w.Write([]byte(rss))
+	if err != nil {
+		fmt.Println("error while writing: ", err)
+	}
 }

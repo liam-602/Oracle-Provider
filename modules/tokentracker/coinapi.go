@@ -3,7 +3,7 @@ package tokentracker
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"strings"
 
@@ -41,7 +41,7 @@ func fetchTokenPricesFromCoinAPI(symbol string) (float64, error) {
 		return 0, err
 	}
 	defer resp.Body.Close()
-	body, _ := ioutil.ReadAll(resp.Body)
+	body, _ := io.ReadAll(resp.Body)
 	var data ExchangeRate
 	if err := json.Unmarshal(body, &data); err != nil && !strings.Contains(err.Error(), "EOF") {
 		fmt.Println("error decoding data: ", err)

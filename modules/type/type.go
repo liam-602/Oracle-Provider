@@ -13,6 +13,8 @@ type TickerPrice struct {
 	Price  sdkmath.LegacyDec `protobuf:"bytes,3,opt,name=price,proto3,customtype=cosmossdk.io/math.LegacyDec" json:"price"`
 }
 
+type TokenPrices map[string]float64
+
 func NewTickerPrice(symbol string, time time.Time, price string) (TickerPrice, error) {
 	priceDec, err := sdkmath.LegacyNewDecFromStr(price)
 	if err != nil {

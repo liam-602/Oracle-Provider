@@ -1,0 +1,10 @@
+{
+    "tokens": [
+        {
+            "symbol": "btc",
+            "name": "btc",
+            "coingeckoId": "bitcoin",
+            "decimals": 8
+        }
+    ]
+}

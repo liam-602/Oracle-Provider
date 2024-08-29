@@ -5,8 +5,10 @@ RUNNER_BASE_IMAGE_DISTROLESS := gcr.io/distroless/static-debian11
 
 install:
 	go mod download
+
 start: 
 	go run main.go serve --config config.json
+
 build:
 	go build -o bin/interlock-oracle main.go
 

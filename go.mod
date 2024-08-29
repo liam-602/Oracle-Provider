@@ -2,7 +2,7 @@ module github.com/Interlocked-Labs/oracle-provider
 
 require (
 	cosmossdk.io/math v1.3.0
-	github.com/Interlocked-Labs/sdk-go v0.0.0-00010101000000-000000000000
+	github.com/Interlocked-Labs/sdk-go v0.1.0
 	github.com/go-chi/chi/v5 v5.0.8
 	github.com/go-chi/cors v1.2.0
 	github.com/go-chi/render v1.0.1
@@ -205,7 +205,6 @@ replace (
 replace (
 	// use cosmos keyring
 	github.com/99designs/keyring => github.com/cosmos/keyring v1.2.0
-	github.com/Interlocked-Labs/sdk-go => ../sdk-go
 	github.com/cockroachdb/pebble => github.com/cockroachdb/pebble v0.0.0-20230209160836-829675f94811
 	// release/v1.11.x
 	github.com/ethereum/go-ethereum => github.com/crypto-org-chain/go-ethereum v1.10.20-0.20240425065928-ebb09502e7a7
@@ -216,6 +215,7 @@ replace (
 	github.com/gin-gonic/gin => github.com/gin-gonic/gin v1.7.0
 	github.com/syndtr/goleveldb => github.com/syndtr/goleveldb v1.0.1-0.20210819022825-2ae1ddf74ef7
 	github.com/tidwall/btree => github.com/crypto-org-chain/btree v0.0.0-20240406140148-2687063b042c
+	github.com/Interlocked-Labs/sdk-go => ../sdk-go
 )
 
 go 1.21

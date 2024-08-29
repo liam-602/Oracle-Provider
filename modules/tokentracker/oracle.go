@@ -50,7 +50,7 @@ func New(
 	}
 }
 
-func (o *Oracle) CalcNFetchTokenPrices() (TokenPrices, error) {
+func (o *Oracle) CalcNFetchTokenPrices() (types.TokenPrices, error) {
 	tokenPrices, err := o.fetchTokenPrices()
 	if err != nil {
 		log.WithFields(logrus.Fields{"err": err}).Error("Error fetching token prices")
@@ -60,7 +60,7 @@ func (o *Oracle) CalcNFetchTokenPrices() (TokenPrices, error) {
 	return tokenPrices, err
 }
 
-func (o *Oracle) CalcNSubmitTokenPrices() (TokenPrices, error) {
+func (o *Oracle) CalcNSubmitTokenPrices() (types.TokenPrices, error) {
 	tokenPrices, err := o.fetchTokenPrices()
 	if err != nil {
 		log.WithFields(logrus.Fields{"err": err}).Error("Error fetching token prices")
@@ -74,7 +74,7 @@ func (o *Oracle) CalcNSubmitTokenPrices() (TokenPrices, error) {
 	return tokenPrices, err
 }
 
-func (o *Oracle) fetchTokenPrices() (TokenPrices, error) {
+func (o *Oracle) fetchTokenPrices() (types.TokenPrices, error) {
 	// fetch custom tokens for which price required
 	customTokens, err := o.fetchCustomTokens()
 	if err != nil {
@@ -82,7 +82,7 @@ func (o *Oracle) fetchTokenPrices() (TokenPrices, error) {
 		return nil, err
 	}
 
-	tokenPricesBySymbol := make(TokenPrices)
+	tokenPricesBySymbol := make(types.TokenPrices)
 	for _, tokens := range customTokens {
 		symbol := tokens.Symbol
 		log.WithFields(logrus.Fields{"symbol": symbol}).Info("Fetching token price for symbol")
@@ -104,7 +104,6 @@ func (o *Oracle) fetchTokenPrices() (TokenPrices, error) {
 					}
 					pricesFromMultipleServices = append(pricesFromMultipleServices, coinGeckoPrices)
 					log.WithFields(logrus.Fields{"coinGeckoPrices": coinGeckoPrices}).Info("Fetching token prices from CoinGecko")
-					coinGeckoPrices = 0
 				}
 			case "CoinMarketCap":
 				coinCMCPrices, err := fetchTokenPricesFromCoinMarketCap(symbol)
@@ -118,7 +117,6 @@ func (o *Oracle) fetchTokenPrices() (TokenPrices, error) {
 					}
 					pricesFromMultipleServices = append(pricesFromMultipleServices, coinCMCPrices)
 					log.WithFields(logrus.Fields{"coinCMCPrices": coinCMCPrices}).Info("Fetching token prices from CoinMarketCap")
-					coinCMCPrices = 0
 				}
 			case "CoinAPI":
 				coinAPIPrices, err := fetchTokenPricesFromCoinAPI(symbol)
@@ -132,7 +130,6 @@ func (o *Oracle) fetchTokenPrices() (TokenPrices, error) {
 					}
 					pricesFromMultipleServices = append(pricesFromMultipleServices, coinAPIPrices)
 					log.WithFields(logrus.Fields{"coinAPIPrices": coinAPIPrices}).Info("Fetching token prices from CoinAPI")
-					coinAPIPrices = 0
 				}
 			default:
 				log.WithFields(logrus.Fields{"Provider": provider}).Error("This provider is not defined")
@@ -171,7 +168,7 @@ func (o *Oracle) calculateMedianForTokenPrices(tokenPrices []float64) float64 {
 	}
 }
 
-func (o *Oracle) submitTokenPrices(tokenPricesBySymbol TokenPrices) error {
+func (o *Oracle) submitTokenPrices(tokenPricesBySymbol types.TokenPrices) error {
 	log.WithFields(logrus.Fields{"tokenPricesBySymbol": tokenPricesBySymbol}).Info("Submitting token prices")
 
 	chainClient, err := util.GetChainClientInstance()
@@ -194,6 +191,7 @@ func (o *Oracle) submitTokenPrices(tokenPricesBySymbol TokenPrices) error {
 		prices, err := util.GetPrices(token.Symbol, o.priceHistory)
 		if err != nil {
 			fmt.Println("Error while Getting Prices:", err)
+			continue
 		}
 		pricesFromMultipleServices := make([]float64, 0)
 		for _, price := range prices {
@@ -201,6 +199,7 @@ func (o *Oracle) submitTokenPrices(tokenPricesBySymbol TokenPrices) error {
 			floatVal, err := strconv.ParseFloat(decStr, 64)
 			if err != nil {
 				fmt.Println("Error parsing float:", err)
+				continue
 			}
 			pricesFromMultipleServices = append(pricesFromMultipleServices, floatVal)
 		}
@@ -215,20 +214,23 @@ func (o *Oracle) submitTokenPrices(tokenPricesBySymbol TokenPrices) error {
 		tokenPrices = append(tokenPrices, oracleTypes.NewCurrentPrice(fmt.Sprintf("%s:usd", token.Symbol), priceInDec))
 	}
 
-	msg := oracleTypes.MsgPostPrice{
-		From:        chainClient.FromAddress().String(),
-		TokenPrices: tokenPrices,
-		Expiry:      time.Now().Add(time.Duration(expiryInSeconds * time.Second.Nanoseconds())),
-	}
-	log.Info("Broadcasting tokenPrices msg: ", msg)
+	if len(tokenPrices) != 0 {
+		msg := oracleTypes.MsgPostPrice{
+			From:        chainClient.FromAddress().String(),
+			TokenPrices: tokenPrices,
+			Expiry:      time.Now().Add(time.Duration(expiryInSeconds * time.Second.Nanoseconds())),
+		}
+		log.Info("Broadcasting tokenPrices msg: ", msg)
 
-	_, err = chainClient.SyncBroadcastMsg(&msg)
-	if err != nil {
-		log.WithFields(logrus.Fields{"msg": msg, "err": err}).Error("Error broadcasting tokenPrices msg")
-		return err
-	}
+		_, err = chainClient.SyncBroadcastMsg(&msg)
+		if err != nil {
+			log.WithFields(logrus.Fields{"msg": msg, "err": err}).Error("Error broadcasting tokenPrices msg")
+			return err
+		}
 
-	return nil
+		return nil
+	}
+	return fmt.Errorf("there are no token prices")
 }
 
 type TokenSymbols struct {

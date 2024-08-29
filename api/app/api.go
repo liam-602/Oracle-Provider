@@ -6,8 +6,7 @@ import (
 )
 
 // API provides application resources and handlers.
-type API struct {
-}
+type API struct {}
 
 // Router provides application routes.
 func (a *API) Router() *chi.Mux {

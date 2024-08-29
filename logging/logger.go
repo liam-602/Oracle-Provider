@@ -80,7 +80,7 @@ func (f *customLogFormatter) Format(entry *logrus.Entry) ([]byte, error) {
 func NewLogger() *logrus.Logger {
 	Logger = logrus.New()
 	level := viper.GetString("LOG_LEVEL")
-	appName := "gasprice-oracle"
+	appName := "fresco-oracle"
 
 	Logger.SetFormatter(CustomLogger{
 		defaultField: appName,
