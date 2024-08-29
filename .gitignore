@@ -1,0 +1,5 @@
+.chain_cookie
+.DS_Store
+config.json
+/bin
+priceHistory.db

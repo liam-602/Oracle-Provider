@@ -1,0 +1,21 @@
+{
+    "PORT": 3001,
+    "CRON_INTERVAL_IN_SEC_FETCH": 10,
+    "CRON_INTERVAL_IN_SEC_SUBMIT": 60,
+    "PRIVATE_KEY": "xxx",
+    "COIN_API_KEY": "xxx",
+    "COIN_GECKO_KEY": "xxx",
+    "COIN_MARKET_CAP_KEY": "xxx",
+    "NETWORK": "local",
+    "EXPIRY_IN_SECONDS": 3600,
+    "DB_CONFIG": "priceHistory.db",
+    "TwapMaxTimeDeltaSeconds": 120,
+    "TwapMinHistoryPeriodFraction": 0.8,
+    "TwapMaxPriceDeviation": 0.05,
+    "TwapPeriodInMinute": 10,
+    "Provider": [
+        "CoinAPI",
+        "CoinGecko",
+        "CoinMarketCap"
+    ]
+}
